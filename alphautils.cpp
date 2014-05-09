@@ -387,6 +387,14 @@ namespace alphautils
         return !stat(path.c_str(), &pathStat); // stat == 0 if exist, -1 otherwise
     }
 
+    bool contain_path(const string& text)
+    {
+        if (text[0] == '.' || text[0] == '/')
+            return true;
+        else
+            return false;
+    }
+
     void make_dir_available(const string& path, const string& permission)
     {
         stringstream cmd;

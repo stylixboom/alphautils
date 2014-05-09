@@ -15,7 +15,7 @@ INC = -I/home/stylix/local/include
 CFLAGS = -Wall -fexceptions
 RESINC = 
 LIBDIR = -L/home/stylix/local/lib
-LIB = ../sifthesaff/libsifthesaff.a -lopencv_stitching -lopencv_videostab -lopencv_gpu -lopencv_legacy -lopencv_ts -lopencv_nonfree -lopencv_contrib -lopencv_calib3d -lopencv_objdetect -lopencv_features2d -lopencv_video -lopencv_photo -lopencv_highgui -lopencv_flann -lopencv_imgproc -lopencv_ml -lopencv_core -llapacke -llapack -lblas -ltmglib
+LIB = ../sifthesaff/libsifthesaff.a -lopencv_stitching -lopencv_videostab -lopencv_gpu -lopencv_legacy -lopencv_ts -lopencv_nonfree -lopencv_contrib -lopencv_calib3d -lopencv_objdetect -lopencv_features2d -lopencv_video -lopencv_photo -lopencv_highgui -lopencv_flann -lopencv_imgproc -lopencv_ml -lopencv_core -lx264 -lfaac -llapacke -llapack -lblas -ltmglib
 LDFLAGS = -lhdf5 -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lmpi_cxx -lmpi `pkg-config --libs lapacke` -lrt -lpthread -ldl
 
 INC_DEBUG = $(INC)
@@ -79,7 +79,8 @@ $(OBJDIR_DEBUG)/tsp.o: tsp.cpp
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
-	rm -rf $(OBJDIR_DEBUG)
+	#rm -rf .
+	rm -rf .(OBJDIR_DEBUG)
 
 before_release: 
 	test -d . || mkdir -p .
@@ -112,7 +113,8 @@ $(OBJDIR_RELEASE)/tsp.o: tsp.cpp
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
-	rm -rf $(OBJDIR_RELEASE)
+	#rm -rf .
+	rm -rf .(OBJDIR_RELEASE)
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
 

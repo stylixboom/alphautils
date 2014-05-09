@@ -92,6 +92,7 @@ namespace alphautils
 	string get_directory(const string& path);
 	string get_filename(const string& path);
 	bool is_path_exist(const string& path);
+	bool contain_path(const string& text);
 	void make_dir_available(const string& path, const string& permission = "755");
 	bool lockfile(const string& path);
 	bool unlockfile(const string& path);
