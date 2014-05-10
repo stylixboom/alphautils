@@ -155,6 +155,149 @@ namespace alphautils
             return true;  // successfully terminated
         }
 
+        bool HDF_write_append_2DFLOAT(const string& out, bool file_exits, const string& dataset_name, const float data[], const size_t row, const size_t col)
+        {
+            H5std_string FILE_NAME( out );
+            H5std_string DATASET_NAME( dataset_name );
+            hsize_t dims[2] = {row, col};              // dataset dimensions at creation
+            hsize_t maxdims[2] = {H5F_UNLIMITED, col};
+            size_t buffer = 1;
+            hsize_t chunk_dims[2] ={buffer, col};
+            int RANK = 2;
+
+            // Try block to detect exceptions raised by any of the calls inside it
+            try
+            {
+                /*
+                * Turn off the auto-printing when failure occurs so that we can
+                * handle the errors appropriately
+                */
+                Exception::dontPrint();
+
+                H5File *file;
+                DataSet *dataset;
+                DataSpace *dataspace;
+
+                if (file_exits) /// File exist, open, extend
+                {
+                    // Create a new file using H5F_ACC_RDWR access
+                    file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+
+                    // Open existing dataset, then get all previous properties
+                    dataset = new DataSet( file->openDataSet( DATASET_NAME ) );
+
+                    // Get existing space info
+                    hsize_t exist_dims[2];
+                    dataspace = new DataSpace( dataset->getSpace() );
+                    dataspace->getSimpleExtentDims( exist_dims, NULL);
+                    // After read dim, clear this dataspace.
+                    // and it will be replaced by an extended dataspace
+                    delete dataspace;
+
+                    // Resize dims
+                    hsize_t new_dims[2] = { dims[0] + exist_dims[0], dims[1] };
+
+                    // Extend dataset
+                    dataset->extend( new_dims );
+
+                    // Get existing space including extended
+                    dataspace = new DataSpace( dataset->getSpace() );
+
+                    // Select a hyperslab in extended portion of the dataset.
+                    hsize_t offset[2] = { exist_dims[0], 0 };
+                    dataspace->selectHyperslab( H5S_SELECT_SET, dims, offset );
+
+                    // Define memory space.
+                    DataSpace *memspace = new DataSpace( 2, dims, NULL );
+
+                    // Write data to the extended portion of the dataset.
+                    dataset->write( data, PredType::NATIVE_FLOAT, *memspace, *dataspace );
+
+                    // Release memory
+                    delete memspace;
+                }
+                else            /// File not exist, create with unlimited dim, write
+                {
+                    /*
+                    * Create a new file using H5F_ACC_TRUNC access,
+                    * default file creation properties, and default file
+                    * access properties.
+                    */
+                    file = new H5File( FILE_NAME, H5F_ACC_TRUNC );
+
+                    /*
+                    * Define the size of the array and create the data space for fixed
+                    * size dataset.
+                    */
+                    dataspace = new DataSpace( RANK, dims, maxdims );
+
+                    /*
+                    * Modify dataset creation property to enable chunking (important for being extend)
+                    */
+                    DSetCreatPropList *prop = new  DSetCreatPropList;
+                    prop->setChunk( 2, chunk_dims );
+
+                    /*
+                    * Define datatype for the data in the file.
+                    * We will store little endian FLOAT numbers.
+                    */
+                    FloatType datatype( PredType::NATIVE_FLOAT );
+                    datatype.setOrder( H5T_ORDER_LE );
+
+                    /*
+                    * Create a new dataset within the file using defined dataspace and
+                    * datatype and dataset creation properties.
+                    */
+                    dataset = new DataSet( file->createDataSet( DATASET_NAME, datatype, *dataspace, *prop ) );
+
+                    /*
+                    * Write the data to the dataset using default memory space, file
+                    * space, and transfer properties.
+                    */
+                    dataset->write( data, PredType::NATIVE_FLOAT );
+
+                    // Release memory
+                    delete prop;
+                }
+
+                // Release memory
+                delete dataspace;
+                delete dataset;
+                delete file;
+
+            }  // end of try block
+
+            // catch failure caused by the H5File operations
+            catch( FileIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSet operations
+            catch( DataSetIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSpace operations
+            catch( DataSpaceIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSpace operations
+            catch( DataTypeIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            return true;  // successfully terminated
+        }
+
         bool HDF_read_2DFLOAT(const string& in, const string& dataset_name, float *&data, size_t &row, size_t &col)
         {                                                                       //*&data prev work
             H5std_string FILE_NAME( in );
