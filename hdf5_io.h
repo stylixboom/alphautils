@@ -38,7 +38,7 @@ namespace alphautils
         bool HDF_write_2DFLOAT(const string& out, const string& dataset_name, const float data[], const size_t row, const size_t col);
         bool HDF_write_append_2DFLOAT(const string& out, bool file_exits, const string& dataset_name, const float data[], const size_t row, const size_t col);
         bool HDF_read_2DFLOAT(const string& in, const string& dataset_name, float *&data, size_t &row, size_t &col);
-        bool HDF_readrow_2DFLOAT(const string& in, const string& dataset_name, float *&data, const size_t from_row, const size_t read_count);
+        bool HDF_read_row_2DFLOAT(const string& in, const string& dataset_name, float *&data, const size_t from_row, const size_t read_count);
     };
 };
 //;)

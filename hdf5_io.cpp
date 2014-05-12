@@ -161,7 +161,7 @@ namespace alphautils
             H5std_string DATASET_NAME( dataset_name );
             hsize_t dims[2] = {row, col};              // dataset dimensions at creation
             hsize_t maxdims[2] = {H5F_UNLIMITED, col};
-            size_t buffer = 1;
+            size_t buffer = 512;
             hsize_t chunk_dims[2] ={buffer, col};
             int RANK = 2;
 
@@ -479,7 +479,7 @@ namespace alphautils
             return true;  // successfully terminated
         }
 
-        bool HDF_readrow_2DFLOAT(const string& in, const string& dataset_name, float *&data, const size_t from_row, const size_t read_count)
+        bool HDF_read_row_2DFLOAT(const string& in, const string& dataset_name, float *&data, const size_t from_row, const size_t read_count)
         {                                                                       //*&data prev work
             H5std_string FILE_NAME( in );
             H5std_string DATASET_NAME( dataset_name );
