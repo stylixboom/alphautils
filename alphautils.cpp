@@ -493,15 +493,38 @@ namespace alphautils
         return output;
 	}
 
-	bool bin_write_vector_SIZET(const string& out, vector<size_t>& data)
+	bool bin_write_vector_SIZET(const string& out, vector<size_t>& data, bool append)
 	{
         size_t data_size;
-        ofstream OutFile (out.c_str(), ios::binary);
+
+        fstream OutFile;
+        if (append)
+            OutFile.open(out.c_str(), ios::binary | ios::in | ios::out);
+        else
+            OutFile.open(out.c_str(), ios::binary | ios::out);
         if (OutFile.is_open())
         {
-            // Write data_size
-            data_size = data.size();
-            OutFile.write(reinterpret_cast<char*>(&data_size), sizeof(data_size));
+            if (append)
+            {
+                // Read current data_size
+                // If appending, read existing header
+                OutFile.seekg(0, OutFile.beg);
+                OutFile.read((char*)(&data_size), sizeof(data_size));
+
+                // Update data_size for append mode
+                OutFile.seekp(0, OutFile.beg);
+                data_size += data.size();
+                OutFile.write(reinterpret_cast<char*>(&data_size), sizeof(data_size));
+
+                // Go to the end of stream
+                OutFile.seekp(0, OutFile.end);
+            }
+            else
+            {
+                // Write at the beginning of stream for normal mode
+                data_size = data.size();
+                OutFile.write(reinterpret_cast<char*>(&data_size), sizeof(data_size));
+            }
 
             // Write data
             vector<size_t>::iterator data_it;
@@ -541,18 +564,47 @@ namespace alphautils
         return false;
 	}
 
-	bool bin_write_array_SIZET(const string& out, size_t *data, size_t row, size_t col)
+	bool bin_write_array_SIZET(const string& out, size_t *data, size_t row, size_t col, bool append_row)
 	{
-        ofstream OutFile (out.c_str(), ios::binary);
+        size_t data_row, data_col;
+
+        fstream OutFile;
+        if (append_row)
+            OutFile.open(out.c_str(), ios::binary | ios::app);
+        else
+            OutFile.open(out.c_str(), ios::binary);
         if (OutFile.is_open())
         {
-            // Write row
-            OutFile.write(reinterpret_cast<char*>(&row), sizeof(row));
+            if (append_row)
+            {
+                // Read current data_row
+                // If appending, read existing header
+                OutFile.seekg(0, OutFile.beg);
+                OutFile.read((char*)(&data_row), sizeof(data_row));
 
-            // Write col
-            OutFile.write(reinterpret_cast<char*>(&col), sizeof(col));
+                // Update data_row for append_row mode
+                OutFile.seekp(0, OutFile.beg);
+                data_row += row;
 
-            // Write data
+                // Write data_row
+                OutFile.write(reinterpret_cast<char*>(&data_row), sizeof(data_row));
+
+                // Go to the end of stream
+                OutFile.seekp(0, OutFile.end);
+            }
+            else
+            {
+                // Write at the beginning of stream for normal mode
+                data_row = row;
+                data_col = col;
+
+                // Write data_row
+                OutFile.write(reinterpret_cast<char*>(&data_row), sizeof(data_row));
+                // Write data_col
+                OutFile.write(reinterpret_cast<char*>(&data_col), sizeof(data_col));
+            }
+
+            // Write data (for current input row * col)
             OutFile.write(reinterpret_cast<char*>(data), row * col * sizeof(data[0]));
 
             // Close file
@@ -618,7 +670,7 @@ namespace alphautils
     }
 
     // Percentage
-    void percentout(int curr, int full, int sampling = 1)
+    void percentout(int curr, int full, int sampling)
     {
         if (curr % sampling == 0)
         {

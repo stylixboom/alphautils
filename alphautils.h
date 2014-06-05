@@ -5,7 +5,7 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -19,7 +19,7 @@
 #include <sys/stat.h>   // file-directory existing
 #include <sys/types.h>  // file-directory
 #include <dirent.h>     // file-directory
-#include <math.h>       // Math
+#include <cmath>        // Math
 #include <limits>       // limit (for max math limit and etc)
 #include "version.h"
 
@@ -102,9 +102,9 @@ namespace alphautils
 	bool text_write(const string& out, const string& text, bool append);
 	string text_read(const string& in);
 	vector<string> text_readline2vector(const string& in);
-	bool bin_write_vector_SIZET(const string& out, vector<size_t>& data); //don't use const T& data, explained here https://www.securecoding.cert.org/confluence/display/seccode/EXP05-C.+Do+not+cast+away+a+const+qualification
+	bool bin_write_vector_SIZET(const string& out, vector<size_t>& data, bool append = false); //don't use const T& data, explained here https://www.securecoding.cert.org/confluence/display/seccode/EXP05-C.+Do+not+cast+away+a+const+qualification
 	bool bin_read_vector_SIZET(const string& in, vector<size_t>& data);
-	bool bin_write_array_SIZET(const string& out, size_t *data, size_t row, size_t col);
+	bool bin_write_array_SIZET(const string& out, size_t *data, size_t row, size_t col, bool append_row = false);
 	bool bin_read_array_SIZET(const string& in, size_t *&data, size_t &row, size_t &col);
 
 	// Execution
@@ -113,7 +113,7 @@ namespace alphautils
     string execp(string cmd);
 
 	// Percentage
-	void percentout(int curr, int full, int sampling);
+	void percentout(int curr, int full, int sampling = 1);
 
 	// 2D
 	void normalise2dpts(const float inPtsx[], const float inPtsy[], float normPtsx[], float normPtsy[], size_t amountPts);
