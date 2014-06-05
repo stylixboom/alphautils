@@ -8,7 +8,6 @@
 #include "linear_tree.h"
 
 using namespace std;
-using namespace tr1;
 
 namespace alphautils
 {

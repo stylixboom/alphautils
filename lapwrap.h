@@ -8,8 +8,8 @@
  *      Author: Siriwat Kasamwattanarote
  */
 
-#include <stdlib.h>
-#include <stddef.h>
+#include <cstdlib>
+#include <cstddef>
 
 #ifndef __LAPWRAP_H__
 #define __LAPWRAP_H__

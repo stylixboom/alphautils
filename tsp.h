@@ -5,7 +5,7 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -18,14 +18,13 @@
 #include <sys/stat.h>   // file-directory existing
 #include <sys/types.h>  // file-directory
 #include <dirent.h>     // file-directory
-#include <math.h>       // Math
+#include <cmath>        // Math
 #include <limits>       // limit (for max math limit and etc)
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include "alphautils.h"
 #include "linear_tree.h"
 
 using namespace std;
-using namespace tr1;
 
 namespace alphautils
 {
