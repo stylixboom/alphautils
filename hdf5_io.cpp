@@ -385,7 +385,7 @@ namespace alphautils
                 /*
                 * Output buffer initialization.
                 */
-                cout << "allocating [" << amount << ", " << dim << "] "; cout.flush();
+                //cout << "allocating [" << amount << ", " << dim << "] "; cout.flush();
                 //size_t dataset_idx, dim_idx;
                 data = new float[amount * dim];
                 /*for (dataset_idx = 0; dataset_idx < amount; dataset_idx++)
@@ -395,7 +395,7 @@ namespace alphautils
                         data[dataset_idx * dim + dim_idx] = 0.0f;
                     }
                 }*/
-                cout << "allocated "; cout.flush();
+                //cout << "allocated "; cout.flush();
 
 
                 /*

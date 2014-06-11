@@ -122,14 +122,15 @@ namespace alphautils
         {
             SIFThesaff sift_reader(colorspace, normpoint, rootsift);
             sift_reader.importKeypoints(sift_path, binary);
+            int num_kp = sift_reader.num_kp;
 
             float min_degree = 1000;
             float max_degree = -1000;
 
             // Save degree for analyzing
-            float* degree_pack = new float[sift_reader.kp.size()];
+            float* degree_pack = new float[num_kp];
 
-            for (size_t kp_idx = 0; kp_idx < sift_reader.kp.size(); kp_idx++)
+            for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
             {
                 SIFT_Keypoint curr_kp = {sift_reader.kp[kp_idx][0], sift_reader.kp[kp_idx][1], sift_reader.kp[kp_idx][2], sift_reader.kp[kp_idx][3], sift_reader.kp[kp_idx][4]};
 
@@ -162,6 +163,7 @@ namespace alphautils
             cout << endl;
 
             // Release memory
+            delete[] degree_pack;
             delete[] degree_hist;
             delete[] degree_hist_label;
         }

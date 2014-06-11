@@ -57,10 +57,6 @@ namespace alphautils
     float calc_sd_premean(const float data[], size_t data_size, float mean);
     float calc_slope(const float x_data[], const float y_data[], size_t data_size); // Linear regression slope
 
-    // Timing
-    double TimeElapse(timespec start);
-    timespec CurrentPreciseTime();
-
     // Terminal Style
     // Ref http://stackoverflow.com/questions/2616906/how-do-i-output-coloured-text-to-a-linux-terminal
     const string redc =     "\x1b[31;1m";
@@ -112,8 +108,15 @@ namespace alphautils
 	string exec(string cmd);
     string execp(string cmd);
 
+    // Timing
+    string SecondToDayHourMinSec(double second);
+    double TimeLeft(double timeuse, size_t curr, size_t start, size_t full);
+    double TimeElapse(const timespec& start);
+    timespec CurrentPreciseTime();
+
 	// Percentage
-	void percentout(int curr, int full, int sampling = 1);
+	void percentout(size_t curr, size_t full, int sampling = 1);
+	void percentout_timeleft(size_t curr, size_t start, size_t full, const timespec& timestart, int sampling = 1);
 
 	// 2D
 	void normalise2dpts(const float inPtsx[], const float inPtsy[], float normPtsx[], float normPtsy[], size_t amountPts);
@@ -123,9 +126,9 @@ namespace alphautils
 
 	// Matrix
 	// Symmat-Matrix
-	void create_symmat(float *&symmat, size_t width);
-	void set_symmat_at(float symmat[], size_t row, size_t col, float value);
-	float get_symmat_at(const float symmat[], size_t row, size_t col);
+	void create_symmat(float* &symmat, size_t width);
+	void set_symmat_at(float* symmat, size_t row, size_t col, float value);
+	float get_symmat_at(const float* symmat, size_t row, size_t col);
 	size_t get_symmat_size(size_t width);
 	size_t rc2half_idx(size_t row, size_t col);
 	xy_idx half2rc_idx(size_t idx);

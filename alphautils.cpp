@@ -160,39 +160,6 @@ namespace alphautils
         return slope;
     }
 
-    // Timing
-    double TimeElapse(timespec start)
-    {
-        // Ref http://www.guyrutenberg.com/2007/09/22/profiling-code-using-clock_gettime/
-        // Get current time
-        timespec curr;
-        clock_gettime(CLOCK_MONOTONIC, &curr);
-
-        timespec elapse;
-        if ((curr.tv_nsec - start.tv_nsec) < 0)
-        {
-            elapse.tv_sec = curr.tv_sec - start.tv_sec - 1;
-            elapse.tv_nsec = 1000000000 + curr.tv_nsec - start.tv_nsec;
-        }
-        else
-        {
-            elapse.tv_sec = curr.tv_sec - start.tv_sec;
-            elapse.tv_nsec = curr.tv_nsec - start.tv_nsec;
-        }
-
-        // Return time in second precision
-        return double(elapse.tv_sec) + elapse.tv_nsec / 1000000000.0;
-    }
-
-    timespec CurrentPreciseTime()
-    {
-        timespec curr;
-
-        clock_gettime(CLOCK_MONOTONIC, &curr);
-
-        return curr;
-    }
-
     // String manipulation
     string toString(int val)
     {
@@ -669,12 +636,99 @@ namespace alphautils
         return result;
     }
 
+    // Timing
+    string SecondToDayHourMinSec(double second)
+    {
+        // Ref: http://stackoverflow.com/questions/6313656/split-down-a-number-in-seconds-to-days-hours-minutes-and-seconds
+        unsigned int day = 0;
+        unsigned int hour = 0;
+        unsigned int minute = 0;
+
+        // Converting
+        if (second > 60)    // Second to Minute
+        {
+            minute = int(second) / 60;  // Up scale
+            second = fmod(second, 60);  // Filter
+        }
+        if (minute > 60)    // Minute to Hour
+        {
+            hour = minute / 60;         // Up scale
+            minute = minute % 60;       // Filter
+        }
+        if (hour > 24)    // Hour to day
+        {
+            day = hour / 24;            // Up scale
+            hour = hour % 24;           // Filter
+        }
+
+        // Display
+        stringstream timestring;
+        if (day)        timestring << day << " day ";
+        if (hour)       timestring << hour << " hour ";
+        if (minute)     timestring << minute << " minute ";
+        if (second)timestring << setprecision(2) << fixed << second << " second";
+        return timestring.str();
+    }
+
+    double TimeLeft(double timeuse, size_t curr, size_t start, size_t full)
+    {
+        double left = full - curr;
+        return left * timeuse / (curr - start);
+    }
+
+    double TimeElapse(const timespec& start)
+    {
+        // Ref http://www.guyrutenberg.com/2007/09/22/profiling-code-using-clock_gettime/
+        // Get current time
+        timespec curr;
+        clock_gettime(CLOCK_MONOTONIC, &curr);
+
+        timespec elapse;
+        if ((curr.tv_nsec - start.tv_nsec) < 0)
+        {
+            elapse.tv_sec = curr.tv_sec - start.tv_sec - 1;
+            elapse.tv_nsec = 1000000000 + curr.tv_nsec - start.tv_nsec;
+        }
+        else
+        {
+            elapse.tv_sec = curr.tv_sec - start.tv_sec;
+            elapse.tv_nsec = curr.tv_nsec - start.tv_nsec;
+        }
+
+        // Return time in second precision
+        return double(elapse.tv_sec) + elapse.tv_nsec / 1000000000.0;
+    }
+
+    timespec CurrentPreciseTime()
+    {
+        timespec curr;
+
+        clock_gettime(CLOCK_MONOTONIC, &curr);
+
+        return curr;
+    }
+
     // Percentage
-    void percentout(int curr, int full, int sampling)
+    void percentout(size_t curr, size_t full, int sampling)
     {
         if (curr % sampling == 0)
         {
-            cout << setw(6) << setfill(' ') << setprecision(2) << fixed << 100.0 * curr / full << " %\b\b\b\b\b\b\b\b";
+            // 100.00 %
+            stringstream strout;
+            strout << setw(6) << setfill(' ') << setprecision(2) << fixed << 100.0 * curr / full << " %";
+            cout << strout.str() << string(strout.str().length(), '\b');
+            cout.flush();
+        }
+    }
+
+    void percentout_timeleft(size_t curr, size_t start, size_t full, const timespec& timestart, int sampling)
+    {
+        if (curr % sampling == 0)
+        {
+            // 100.00 % - xx day xx hour xx min xx second left
+            string timestr = SecondToDayHourMinSec(TimeLeft(TimeElapse(timestart), curr, start, full));
+            cout << setw(6) << setfill(' ') << setprecision(2) << fixed << 100.0 * curr / full << " % - "
+                 << timestr << " left" << string(20, ' ') << string(timestr.length() + 36, '\b');
             cout.flush();
         }
     }
@@ -757,17 +811,17 @@ namespace alphautils
     }
 
     // Matrix
-    void create_symmat(float *&symmat, size_t width)
+    void create_symmat(float* &symmat, size_t width)
     {
         symmat = new float[get_symmat_size(width)];
     }
 
-    void set_symmat_at(float symmat[], size_t row, size_t col, float value)
+    void set_symmat_at(float* symmat, size_t row, size_t col, float value)
     {
         symmat[rc2half_idx(row, col)] = value;
     }
 
-    float get_symmat_at(const float symmat[], size_t row, size_t col)
+    float get_symmat_at(const float* symmat, size_t row, size_t col)
     {
         // Debug mode, no diagonal
         /*if (col == row)
