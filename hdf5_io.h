@@ -5,27 +5,14 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <bitset>
-#include <vector>       // setw
-#include <iomanip>
-#include <sys/time.h>   // time
-#include <sys/stat.h>   // file-directory existing
-#include <sys/types.h>  // file-directory
-#include <dirent.h>     // file-directory
-#include <cmath>        // Math
-#include <limits>       // limit (for max math limit and etc)
-#include "H5Cpp.h"      // HDF5 cpp
 
-using namespace std;
+#include "H5Cpp.h"      // HDF5 cpp
 
 #ifndef H5_NO_NAMESPACE
 using namespace H5;
 #endif
+
+using namespace std;
 
 namespace alphautils
 {
@@ -37,6 +24,7 @@ namespace alphautils
         // IO
         bool HDF_write_2DFLOAT(const string& out, const string& dataset_name, const float data[], const size_t row, const size_t col);
         bool HDF_write_append_2DFLOAT(const string& out, bool file_exits, const string& dataset_name, const float data[], const size_t row, const size_t col);
+        bool HDF_update_row_2DFLOAT(const string& out, const string& dataset_name, const float data[], const size_t at_row, const size_t row_size, const size_t col_size);
         bool HDF_read_2DFLOAT(const string& in, const string& dataset_name, float *&data, size_t &row, size_t &col);
         bool HDF_read_row_2DFLOAT(const string& in, const string& dataset_name, float *&data, const size_t from_row, const size_t read_count);
     };

@@ -1,9 +1,28 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <ctime>
+// *** END ***
 /*
  * hdf5_io.cpp
  *
  *  Created on: October 24, 2013
  *      Author: Siriwat Kasamwattanarote
  */
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <bitset>
+#include <vector>       // setw
+#include <iomanip>
+#include <sys/time.h>   // time
+#include <sys/stat.h>   // file-directory existing
+#include <sys/types.h>  // file-directory
+#include <dirent.h>     // file-directory
+#include <cmath>        // Math
+#include <limits>       // limit (for max math limit and etc)
+
+#include "H5Cpp.h"      // HDF5 cpp
 
 #include "hdf5_io.h"
 
@@ -259,6 +278,93 @@ namespace alphautils
                     // Release memory
                     delete prop;
                 }
+
+                // Release memory
+                delete dataspace;
+                delete dataset;
+                delete file;
+
+            }  // end of try block
+
+            // catch failure caused by the H5File operations
+            catch( FileIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSet operations
+            catch( DataSetIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSpace operations
+            catch( DataSpaceIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            // catch failure caused by the DataSpace operations
+            catch( DataTypeIException error )
+            {
+                error.printError();
+                return false;
+            }
+
+            return true;  // successfully terminated
+        }
+
+        bool HDF_update_row_2DFLOAT(const string& out, const string& dataset_name, const float data[], const size_t at_row, const size_t row_size, const size_t col_size)
+        {
+            H5std_string FILE_NAME( out );
+            H5std_string DATASET_NAME( dataset_name );
+            hsize_t dims[2] = {row_size, col_size};              // dataset dimensions at creation
+
+            // Try block to detect exceptions raised by any of the calls inside it
+            try
+            {
+                /*
+                * Turn off the auto-printing when failure occurs so that we can
+                * handle the errors appropriately
+                */
+                Exception::dontPrint();
+
+                H5File *file;
+                DataSet *dataset;
+                DataSpace *dataspace;
+
+                // Create a new file using H5F_ACC_RDWR access
+                file = new H5File( FILE_NAME, H5F_ACC_RDWR );
+
+                // Open existing dataset, then get all previous properties
+                dataset = new DataSet( file->openDataSet( DATASET_NAME ) );
+
+                // Get existing space info
+                hsize_t exist_dims[2];
+                dataspace = new DataSpace( dataset->getSpace() );
+                dataspace->getSimpleExtentDims( exist_dims, NULL);
+                // After read dim, clear this dataspace.
+                // and it will be replaced by an extended dataspace
+                delete dataspace;
+
+                // Get existing space including extended
+                dataspace = new DataSpace( dataset->getSpace() );
+
+                // Select a hyperslab in extended portion of the dataset.
+                hsize_t offset[2] = { at_row, 0 };
+                dataspace->selectHyperslab( H5S_SELECT_SET, dims, offset );
+
+                // Define memory space.
+                DataSpace *memspace = new DataSpace( 2, dims, NULL );
+
+                // Write data to the extended portion of the dataset.
+                dataset->write( data, PredType::NATIVE_FLOAT, *memspace, *dataspace );
+
+                // Release memory
+                delete memspace;
 
                 // Release memory
                 delete dataspace;
