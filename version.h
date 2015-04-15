@@ -4,10 +4,10 @@
 namespace alphautils_AutoVersion{
 	
 	//Date Version Types
-	static const char alphautils_DATE[] = "07";
-	static const char alphautils_MONTH[] = "06";
+	static const char alphautils_DATE[] = "21";
+	static const char alphautils_MONTH[] = "11";
 	static const char alphautils_YEAR[] = "2014";
-	static const char alphautils_UBUNTU_VERSION_STYLE[] =  "14.06";
+	static const char alphautils_UBUNTU_VERSION_STYLE[] =  "14.11";
 	
 	//Software Status
 	static const char alphautils_STATUS[] =  "Alpha";
@@ -16,17 +16,17 @@ namespace alphautils_AutoVersion{
 	//Standard Version Type
 	static const long alphautils_MAJOR  = 1;
 	static const long alphautils_MINOR  = 4;
-	static const long alphautils_BUILD  = 81;
-	static const long alphautils_REVISION  = 91;
+	static const long alphautils_BUILD  = 119;
+	static const long alphautils_REVISION  = 279;
 	
 	//Miscellaneous Version Types
-	static const long alphautils_BUILDS_COUNT  = 21;
-	#define alphautils_RC_FILEVERSION 1,4,81,91
-	#define alphautils_RC_FILEVERSION_STRING "1, 4, 81, 91\0"
-	static const char alphautils_FULLVERSION_STRING [] = "1.4.81.91";
+	static const long alphautils_BUILDS_COUNT  = 56;
+	#define alphautils_RC_FILEVERSION 1,4,119,279
+	#define alphautils_RC_FILEVERSION_STRING "1, 4, 119, 279\0"
+	static const char alphautils_FULLVERSION_STRING [] = "1.4.119.279";
 	
 	//These values are to keep track of your versioning state, don't modify them.
-	static const long alphautils_BUILD_HISTORY  = 22;
+	static const long alphautils_BUILD_HISTORY  = 60;
 	
 
 }
