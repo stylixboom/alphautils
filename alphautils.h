@@ -5,26 +5,9 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <bitset>
-#include <algorithm>    // sort
-#include <functional>   // bind
-#include <vector>       // setw
-#include <iomanip>
-#include <sys/time.h>   // time
-#include <sys/stat.h>   // file-directory existing
-#include <sys/types.h>  // file-directory
-#include <dirent.h>     // file-directory
-#include <cmath>        // Math
-#include <limits>       // limit (for max math limit and etc)
-#include "version.h"
+#include <set>
 
 using namespace std;
-
 
 namespace alphautils
 {
@@ -68,6 +51,7 @@ namespace alphautils
     const string endc =     "\x1b[0m";
 
     // String manipulation
+    bool toBool(const string& val);
     string toString(int val);   // Better to have overloaded function
     string toString(float val); // Because it's easier to use in this case
     string toString(double val);// no need to tell its type when calling
@@ -78,15 +62,18 @@ namespace alphautils
 	string str_replace_first(const string& str, const string& from, const string& to);
 	string str_replace_last(const string& str, const string& from, const string& to);
 	string str_replace_all(const string& str, const string& from, const string& to);
-	template<class T> void string_splitter(const string& s, const char* d, T& ret);
+	void StringExplode(const string& str, const string& separator, vector<string>& results);
+	/*template<class T> void string_splitter(const string& s, const char* d, T& ret);*/
 	string trim_string_until(const string& str, const char& character);
 	bool str_contains(const string& text, const string& str);
 
 	// String file/directory
+	string resolve_path(const string& path);
 	void ls2null(const string& path);
 	vector<string> directory_splitter(const string& path);
 	string get_directory(const string& path);
 	string get_filename(const string& path);
+	bool check_extension(const string& str, const string& ext);
 	bool is_path_exist(const string& path);
 	bool contain_path(const string& text);
 	void make_dir_available(const string& path, const string& permission = "755");
@@ -95,9 +82,10 @@ namespace alphautils
 	bool islock(const string& path);
 
 	// IO
-	bool text_write(const string& out, const string& text, bool append);
+	bool text_write(const string& out, const string& text, bool append = false);
 	string text_read(const string& in);
 	vector<string> text_readline2vector(const string& in);
+	set<string> text_readline2set(const string& in);
 	bool bin_write_vector_SIZET(const string& out, vector<size_t>& data, bool append = false); //don't use const T& data, explained here https://www.securecoding.cert.org/confluence/display/seccode/EXP05-C.+Do+not+cast+away+a+const+qualification
 	bool bin_read_vector_SIZET(const string& in, vector<size_t>& data);
 	bool bin_write_array_SIZET(const string& out, size_t *data, size_t row, size_t col, bool append_row = false);
@@ -113,6 +101,7 @@ namespace alphautils
     double TimeLeft(double timeuse, size_t curr, size_t start, size_t full);
     double TimeElapse(const timespec& start);
     timespec CurrentPreciseTime();
+    string currentDateTime();
 
 	// Percentage
 	void percentout(size_t curr, size_t full, int sampling = 1);
