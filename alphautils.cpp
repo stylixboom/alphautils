@@ -4,8 +4,29 @@
  *  Created on: October 15, 2012
  *      Author: Siriwat Kasamwattanarote
  */
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <bitset>
+#include <set>
+#include <memory>       // uninitialized_fill_n
+#include <algorithm>    // sort
+#include <functional>   // bind
+#include <vector>       // setw
+#include <iomanip>
+#include <sys/time.h>   // time
+#include <sys/stat.h>   // file-directory existing
+#include <sys/types.h>  // file-directory
+#include <dirent.h>     // file-directory
+#include <cmath>        // Math
+#include <limits>       // limit (for max math limit and etc)
 
 #include "alphautils.h"
+
+#include "version.h"
 
 using namespace std;
 
