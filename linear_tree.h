@@ -5,25 +5,6 @@
  *      Author: Siriwat Kasamwattanarote
  */
 #pragma once
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <bitset>
-#include <deque>
-#include <vector>
-#include <iomanip>      // setw
-#include <sys/time.h>   // time
-#include <sys/stat.h>   // file-directory existing
-#include <sys/types.h>  // file-directory
-#include <dirent.h>     // file-directory
-#include <cmath>        // Math
-#include <limits>       // limit (for max math limit and etc)
-#include <unordered_map>
-#include "alphautils.h"
-
-using namespace std;
 
 namespace alphautils
 {

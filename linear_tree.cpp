@@ -1,9 +1,31 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <ctime>
+// *** END ***
 /*
  * linear_tree.cpp
  *
  *  Created on: February 12, 2014
  *      Author: Siriwat Kasamwattanarote
  */
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <bitset>
+#include <deque>
+#include <vector>
+#include <iomanip>      // setw
+#include <sys/time.h>   // time
+#include <sys/stat.h>   // file-directory existing
+#include <sys/types.h>  // file-directory
+#include <dirent.h>     // file-directory
+#include <cmath>        // Math
+#include <limits>       // limit (for max math limit and etc)
+#include <unordered_map>
+
+// Siriwat's header
+#include "alphautils.h"
 
 #include "linear_tree.h"
 

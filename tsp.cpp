@@ -1,9 +1,32 @@
+// *** ADDED BY HEADER FIXUP ***
+#include <ctime>
+// *** END ***
 /*
  * tsp.cpp
  *
  *  Created on: February 14, 2014
  *      Author: Siriwat Kasamwattanarote
  */
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <bitset>
+#include <deque>
+#include <vector>
+#include <iomanip>      // setw
+#include <sys/time.h>   // time
+#include <sys/stat.h>   // file-directory existing
+#include <sys/types.h>  // file-directory
+#include <dirent.h>     // file-directory
+#include <cmath>        // Math
+#include <limits>       // limit (for max math limit and etc)
+#include <unordered_map>
+
+// Siriwat's header
+#include "alphautils.h"
+#include "linear_tree.h"
 
 #include "tsp.h"
 
@@ -344,6 +367,11 @@ vector<size_t> tsp::search_path(int method)
 
         // Initialize
         // path1, path2, ok_link, link_id, and linked
+        fill_n(path1, _total_node, -1);
+        fill_n(path2, _total_node, -1);
+        fill_n(linked, _total_node, 0);
+        fill_n(link_id, _total_node, -1);
+        /*
         for (size_t node_id = 0; node_id < _total_node; node_id++)
         {
             path1[node_id] = -1;
@@ -351,6 +379,7 @@ vector<size_t> tsp::search_path(int method)
             linked[node_id] = 0;
             link_id[node_id] = -1;
         }
+        */
 
         // Linking
         for (size_t symmat_id = 0; symmat_id < symmat_size; symmat_id++)
