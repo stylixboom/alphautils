@@ -4,6 +4,32 @@
  *  Created on: November 3, 2013
  *      Author: Siriwat Kasamwattanarote
  */
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <bitset>
+#include <vector>       // setw
+#include <iomanip>
+#include <sys/time.h>   // time
+#include <sys/stat.h>   // file-directory existing
+#include <sys/types.h>  // file-directory
+#include <dirent.h>     // file-directory
+#include <cmath>        // Math
+#include <limits>       // limit (for max math limit and etc)
+
+#include "lapwrap.h"
+#include "opencv2/core/core.hpp"
+#include "opencv2/nonfree/features2d.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+
+// Siriwat's header
+#include "../alphautils/alphautils.h"
+#include "../sifthesaff/SIFThesaff.h"
 
 #include "imtools.h"
 
@@ -118,23 +144,35 @@ namespace alphautils
             imwrite(out_img_path.c_str(), in_img);
         }
 
+        void draw_sifts(const string& in_img_path, const string& out_img_path, const vector<SIFT_Keypoint>& sift_keypoints, int draw_mode, int colorspace, bool normpoint, bool rootsift)
+        {
+            Mat in_img = imread(in_img_path.c_str());
+
+            for (size_t kp_idx = 0; kp_idx < sift_keypoints.size(); kp_idx++)
+                draw_a_sift(in_img, sift_keypoints[kp_idx], draw_mode, normpoint);
+
+            imwrite(out_img_path.c_str(), in_img);
+        }
+
         void draw_sifts(Mat& in_img, const string& sift_path, int draw_mode, int colorspace, bool normpoint, bool rootsift, bool binary)
         {
             SIFThesaff sift_reader(colorspace, normpoint, rootsift);
             sift_reader.importKeypoints(sift_path, binary);
             int num_kp = sift_reader.num_kp;
 
-            float min_degree = 1000;
-            float max_degree = -1000;
+            //float min_degree = 1000;
+            //float max_degree = -1000;
 
             // Save degree for analyzing
-            float* degree_pack = new float[num_kp];
+            //float* degree_pack = new float[num_kp];
 
             for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
             {
                 SIFT_Keypoint curr_kp = {sift_reader.kp[kp_idx][0], sift_reader.kp[kp_idx][1], sift_reader.kp[kp_idx][2], sift_reader.kp[kp_idx][3], sift_reader.kp[kp_idx][4]};
 
-                float raw_degree = draw_a_sift(in_img, curr_kp, draw_mode, colorspace, normpoint, rootsift, binary);
+                draw_a_sift(in_img, curr_kp, draw_mode, normpoint);
+                /*
+                float raw_degree = draw_a_sift(in_img, curr_kp, draw_mode, colorspace, normpoint);
 
                 // Save degree
                 degree_pack[kp_idx] = raw_degree;
@@ -143,8 +181,10 @@ namespace alphautils
                     min_degree = raw_degree;
                 if (max_degree < raw_degree)
                     max_degree = raw_degree;
+                */
             }
 
+            /*
             cout << "Min degree = " << min_degree << " Max degree: " << max_degree << endl;
 
             // Degree analyzing
@@ -166,9 +206,10 @@ namespace alphautils
             delete[] degree_pack;
             delete[] degree_hist;
             delete[] degree_hist_label;
+            */
         }
 
-        float draw_a_sift(Mat& in_img, SIFT_Keypoint in_keypoint, int draw_mode, int colorspace, bool normpoint, bool rootsift, bool binary)
+        float draw_a_sift(Mat& in_img, SIFT_Keypoint in_keypoint, int draw_mode, bool normpoint)
         {
             float ret_raw_degree = 0.0f;
 
@@ -325,24 +366,62 @@ namespace alphautils
             imwrite(out_path, img_out);
         }
 
-        void overlay_mask(const string& in_path, const string& out_path, const vector<Point2f>& vert, bool normpoint)
+        void overlay_mask(const string& in_path, const string& out_path, const string& mask_path)
+        {
+            // Load image
+            Mat overlay_img = imread(in_path.c_str());
+            Mat mask_img = imread(mask_path.c_str(), 0);
+
+            // Convert finding edge of this mask
+            vector<vector<Point> > contours;
+            vector<Vec4i> hierarchy;
+
+            Scalar red(0, 0, 255);
+
+            try
+            {
+                Canny( mask_img, mask_img, 10, 30, 3 );
+                findContours( mask_img, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE );
+                for( int idx = 0; idx >= 0; idx = hierarchy[idx][0] )
+                {
+                    //Scalar color( rand()&255, rand()&255, rand()&255 );
+                    drawContours( overlay_img, contours, idx, red, 2, 8, hierarchy );
+                }
+            }
+            catch (...)
+            {
+                throw;
+            }
+
+            // Write file
+            imwrite(out_path, overlay_img);
+        }
+
+        void overlay_mask(const string& in_path, const string& out_path, const vector< vector<Point2f> >& polygons, bool normpoint)
+        {
+            for (size_t polygon_idx = 0; polygon_idx < polygons.size(); polygon_idx++)
+                overlay_mask(in_path, out_path, polygons[polygon_idx], normpoint);
+        }
+
+        void overlay_mask(const string& in_path, const string& out_path, const vector<Point2f>& polygon, bool normpoint)
         {
             // Load image
             Mat overlay_img = imread(in_path.c_str());
 
-            for (size_t vert_id = 0; vert_id < vert.size(); vert_id++)
+            for (size_t polygon_idx = 0; polygon_idx < polygon.size(); polygon_idx++)
             {
-                Point2f pstart = vert[vert_id];
-                Point2f pend = vert[(vert_id + 1) % vert.size()];
-                if (normpoint)
+                Point2f pstart = polygon[polygon_idx];
+                Point2f pend = polygon[(polygon_idx + 1) % polygon.size()];
+                // better not to scale (same as ins_online.cpp oxMaskExport)
+                /*if (normpoint)
                 {
                     pstart.x *= overlay_img.cols;   // Re-scale pstart
                     pstart.y *= overlay_img.rows;
                     pend.x *= overlay_img.cols; // Re-scale pend
                     pend.y *= overlay_img.rows;
-                }
+                }*/
                 Scalar red(0, 0, 255);
-                line(overlay_img, pstart, pend, red, 1, CV_AA);
+                line(overlay_img, pstart, pend, red, 2, CV_AA);
             }
 
             // Write file
