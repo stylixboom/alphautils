@@ -182,6 +182,11 @@ namespace alphautils
     }
 
     // String manipulation
+    bool toBool(const string& val)
+    {
+        return val.at(0) != '0';
+    }
+
     string toString(int val)
     {
         stringstream output;
@@ -247,7 +252,7 @@ namespace alphautils
         size_t start_pos = ret.find_last_of(from);
         if (start_pos == string::npos)
             return ret;
-        ret.replace(start_pos, from.length(), to);
+        ret.replace(start_pos - from.length() + 1, from.length(), to);
         return ret;
     }
 
@@ -263,6 +268,25 @@ namespace alphautils
         return ret;
     }
 
+    void StringExplode(const string& str, const string& separator, vector<string>& results)
+    {
+        // Ref http://www.infernodevelopment.com/perfect-c-string-explode-split
+        string working_str = str;
+        size_t found;
+        found = working_str.find_first_of(separator);
+        while (found != string::npos)
+        {
+            if (found > 0)
+                results.push_back(working_str.substr(0, found));
+            working_str = working_str.substr(found + 1);
+            found = working_str.find_first_of(separator);
+        }
+        if (working_str.length() > 0){
+            results.push_back(working_str);
+        }
+    }
+
+    /*
     template<class T>
     void string_splitter(const string& s, const char* d, T& ret)
     {
@@ -297,8 +321,10 @@ namespace alphautils
         output.push_back(typename T::value_type(beg, s.end()));
         output.swap(ret);
 
-        output.clear();
+        // In case input is not empty
+        T().swap(output);
     }
+    */
 
     string trim_string_until(const string& str, const char& character)
     {
@@ -323,6 +349,19 @@ namespace alphautils
     }
 
     // String, file/directory
+    string resolve_path(const string& path)
+    {
+        string resolved_path;
+        char* resolved_path_buffer;                     // path buffer
+
+        resolved_path_buffer = realpath(path.c_str(), NULL);
+        resolved_path = string(resolved_path_buffer);
+
+        free(resolved_path_buffer);                     // Release memory
+
+        return resolved_path;
+    }
+
     void ls2null(const string& path)
     {
         exec("ls -f " + path + COUT2NULL);
@@ -330,10 +369,8 @@ namespace alphautils
 
     vector<string> directory_splitter(const string& path)
     {
-        const char* delimsDir = "/";// Dir
-
         vector<string> ret;
-        string_splitter(path, delimsDir, ret);
+        StringExplode(path, "/", ret);
 
         return ret;
     }
@@ -367,6 +404,15 @@ namespace alphautils
         }
 
         return path.substr(startPos, count);
+    }
+
+    bool check_extension(const string& str, const string& ext)
+    {
+        size_t dot_idx = str.rfind('.');
+        if (dot_idx != string::npos)
+            return str.substr(dot_idx + 1) == ext;
+        else
+            return false;
     }
 
     bool is_path_exist(const string& path)
@@ -428,7 +474,6 @@ namespace alphautils
         if (OutFile.is_open())
         {
             OutFile << text;
-            OutFile.flush();
             // Close file
             OutFile.close();
 
@@ -472,6 +517,27 @@ namespace alphautils
                 getline(InFile, read_line);
                 if (read_line != "")
                     output.push_back(read_line);
+            }
+
+            // Close file
+            InFile.close();
+        }
+
+        return output;
+	}
+
+	set<string> text_readline2set(const string& in)
+	{
+        set<string> output;
+        ifstream InFile (in.c_str());
+        if (InFile)
+        {
+            string read_line;
+            while (!InFile.eof())
+            {
+                getline(InFile, read_line);
+                if (read_line != "")
+                    output.insert(read_line);
             }
 
             // Close file
@@ -694,7 +760,10 @@ namespace alphautils
     double TimeLeft(double timeuse, size_t curr, size_t start, size_t full)
     {
         double left = full - curr;
-        return left * timeuse / (curr - start);
+        if (curr - start > 0)
+            return left * timeuse / (curr - start);
+        else
+            return left * timeuse;
     }
 
     double TimeElapse(const timespec& start)
@@ -727,6 +796,21 @@ namespace alphautils
         clock_gettime(CLOCK_MONOTONIC, &curr);
 
         return curr;
+    }
+
+    // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+    string currentDateTime()
+    {
+        // Ref http://stackoverflow.com/questions/997946/how-to-get-current-time-and-date-in-c
+        time_t     now = time(0);
+        struct tm  tstruct;
+        char       buf[80];
+        tstruct = *localtime(&now);
+        // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+        // for more information about date/time format
+        strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+
+        return buf;
     }
 
     // Percentage
@@ -959,8 +1043,8 @@ namespace alphautils
 
         // Histogram generation
         histogram = new size_t[hist_size];
-        for (size_t hist_id = 0; hist_id < hist_size; hist_id++)
-            histogram[hist_id] = 0; // Initialize histogram
+        // Initialize histogram
+        fill_n(histogram, hist_size, 0);
         for (size_t hist_id = 1; hist_id < hist_size; hist_id++)   // skip first lower_bound, it's always zero, not necessary to be count
         {
             size_t data_pass_count = 0;
@@ -984,7 +1068,7 @@ namespace alphautils
         HIST_CONF hist_config = {HIST_RANGEMODE_AUTO_SD, sd_step_ratio, 0, 0, 0};
         data_to_range_histogram(data, data_size, hist_config, histogram, hist_label, hist_size);
 
-        /*
+
         cout << "Histogram size: " << hist_size << endl;
         cout << "Histogram: ";
         for (size_t hist_idx = 0; hist_idx < hist_size; hist_idx++)
@@ -994,7 +1078,7 @@ namespace alphautils
         for (size_t hist_idx = 0; hist_idx < hist_size; hist_idx++)
             cout << hist_label[hist_idx] << " ";
         cout << endl;
-        */
+
 
         // Calculate Otsu threshold
         size_t threshold = otsu_threshold_from_hist(histogram, hist_size, data_size);
