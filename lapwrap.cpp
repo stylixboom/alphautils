@@ -10,6 +10,11 @@
 
 /* Library of tools wrapping LAPACK utilities and making their usage a bit more comfortable. */
 
+#include <cstdlib>
+#include <cstddef>
+
+#include <lapacke.h>
+
 #include "lapwrap.h"
 
 /* DGESVD prototype (LAPACK) */

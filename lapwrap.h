@@ -7,14 +7,13 @@
  *  Created on: March 19, 2014
  *      Author: Siriwat Kasamwattanarote
  */
+#pragma once
 
-#include <cstdlib>
-#include <cstddef>
+#include <lapacke.h>
 
 #ifndef __LAPWRAP_H__
 #define __LAPWRAP_H__
 
-#include <lapacke.h>
 
 //typedef ptrdiff_t lapack_int;
 
