@@ -270,6 +270,10 @@ namespace alphautils
 
     void StringExplode(const string& str, const string& separator, vector<string>& results)
     {
+        // Clear mem
+        if (!results.empty())
+            vector<string>().swap(results);
+
         // Ref http://www.infernodevelopment.com/perfect-c-string-explode-split
         string working_str = str;
         size_t found;
