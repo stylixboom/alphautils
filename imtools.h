@@ -18,27 +18,25 @@ using namespace cv;
 namespace alphautils
 {
     namespace imtools
-    {
-        static const int DRAW_POINT = 0;
-        static const int DRAW_AFFINE = 1;
-        static const int DRAW_AFFINE_MASK = 2;
-
-        // SIFT Keypoint
-        typedef struct _SIFT_Keypoint{ float x; float y; float a; float b; float c; } SIFT_Keypoint;
-
-        // Color space
-        const static int RGB_SPACE = 10;
-        const static int IRGB_SPACE = 11;
-        const static int LAB_SPACE = 12;
-
+    {		
+		// INS Keypoint
+		typedef struct _INS_KP{ float x; float y; float a; float b; float c; } INS_KP;
+		
+		static const int DRAW_POINT = 0;
+		static const int DRAW_CIRCLE = 1;
+		static const int DRAW_AFFINE = 2;
+		static const int DRAW_AFFINE_MASK = 3;
+		
+		// Color space
+		const static int RGB_SPACE = 10;
+		const static int IRGB_SPACE = 11;
+		const static int LAB_SPACE = 12;
+	
         Size get_image_size(const string& img_path);
-        void vgg_abc2ellipse(float a, float b, float c, float& degree, float& l1, float& l2);
+		void vgg_abc2ellipse(float a, float b, float c, float& degree, float& l1, float& l2);
         float ellipse_abc2degree(float a, float b, float c);
-        float ellipse_getlength(float a, float b, float c);
-        void draw_sifts(const string& in_img_path, const string& out_img_path, const string& sift_path, int draw_mode, int colorspace = RGB_SPACE, bool normpoint = true, bool rootsift = true, bool binary = true);
-        void draw_sifts(const string& in_img_path, const string& out_img_path, const vector<SIFT_Keypoint>& sift_keypoints, int draw_mode, int colorspace, bool normpoint, bool rootsift);
-        void draw_sifts(Mat& in_img, const string& sift_path, int draw_mode, int colorspace = RGB_SPACE, bool normpoint = true, bool rootsift = true, bool binary = true);
-        float draw_a_sift(Mat& in_img, SIFT_Keypoint in_keypoint, int draw_mode, bool normpoint = true);
+        float ellipse_getlength(float a, float b, float c);		
+		
         void concatimage(const Mat& img1, const Mat& img2, Mat& img_out);
         void draw_matched(const string& path1, vector<Point2f> vert1, const string& path2, vector<Point2f> vert2, bool normpoint = true);
         void create_mask(const string& out_path, const Size img_size, const Point vert[], const int vert_count);

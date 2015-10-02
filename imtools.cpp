@@ -20,7 +20,6 @@
 #include <cmath>        // Math
 #include <limits>       // limit (for max math limit and etc)
 
-#include "lapwrap.h"
 #include "opencv2/core/core.hpp"
 #include "opencv2/nonfree/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -28,8 +27,10 @@
 #include "opencv2/imgproc/imgproc.hpp"
 
 // Siriwat's header
-#include "../alphautils/alphautils.h"
-#include "../sifthesaff/SIFThesaff.h"
+#include "lapwrap.h"
+#include "alphautils.h"
+//#include "../sifthesaff/SIFThesaff.h"
+//#include "../orb/orb.h"
 
 #include "imtools.h"
 
@@ -45,49 +46,49 @@ namespace alphautils
             return imread(img_path).size();
         }
 
-        // http://www.robots.ox.ac.uk/~vgg/research/affine/detectors.html
-        void vgg_abc2ellipse(float a, float b, float c, float& degree, float& l1, float& l2)
-        {
-            // degree is in degree
-            // l1 is major axis
-            // l2 is minor axis
+		// http://www.robots.ox.ac.uk/~vgg/research/affine/detectors.html
+		void vgg_abc2ellipse(float a, float b, float c, float& degree, float& l1, float& l2)
+		{
+			// degree is in degree
+			// l1 is major axis
+			// l2 is minor axis
 
-            // original code display_features.m
-            // display_features.m
-            /*
-            [v e]=eig(Mi);
+			// original code display_features.m
+			// display_features.m
+			/*
+			[v e]=eig(Mi);
 
-            l1=1/sqrt(e(1));
+			l1=1/sqrt(e(1));
 
-            l2=1/sqrt(e(4));
+			l2=1/sqrt(e(4));
 
-            alpha=atan2(v(4),v(3));
-            s=1;
-            t = 0:pi/50:2*pi;
-            y=s*(l2*sin(t));
-            x=s*(l1*cos(t));
+			alpha=atan2(v(4),v(3));
+			s=1;
+			t = 0:pi/50:2*pi;
+			y=s*(l2*sin(t));
+			x=s*(l1*cos(t));
 
-            xbar=(x*cos(alpha) + y*sin(alpha)) / 1;
-            ybar=(y*cos(alpha) - x*sin(alpha)) / 1;
-            plot(ybar+i,xbar+j,'-k','LineWidth',3+size);
-            plot(ybar+i,xbar+j,col,'LineWidth',1+size);
-            */
+			xbar=(x*cos(alpha) + y*sin(alpha)) / 1;
+			ybar=(y*cos(alpha) - x*sin(alpha)) / 1;
+			plot(ybar+i,xbar+j,'-k','LineWidth',3+size);
+			plot(ybar+i,xbar+j,col,'LineWidth',1+size);
+			*/
 
-            double rad;                     // radian
-            double a_eivec[4] = { a, b,
-                                  b, c  };
-            double* eival = new double[2];
+			double rad;                     // radian
+			double a_eivec[4] = { a, b,
+								  b, c  };
+			double* eival = new double[2];
 
-            lap_eig(a_eivec, eival, 2);
+			lap_eig(a_eivec, eival, 2);
 
-            rad = atan2(a_eivec[3], a_eivec[2]);            // degree in radian
-            degree = rad * 180 / PI + 180;                  // Convert radian to degree (with offset 180 degree)
-            l1 = 1 / sqrt(eival[1]);                        // Major axis
-            l2 = 1 / sqrt(eival[0]);                        // Minor axis
+			rad = atan2(a_eivec[3], a_eivec[2]);            // degree in radian
+			degree = rad * 180 / PI + 180;                  // Convert radian to degree (with offset 180 degree)
+			l1 = 1 / sqrt(eival[1]);                        // Major axis
+			l2 = 1 / sqrt(eival[0]);                        // Minor axis
 
-            // Release memory
-            delete[] eival;
-        }
+			// Release memory
+			delete[] eival;
+		}
 
         // atan(b/(a-c))/2 is radian
         // atan(b/(a-c))/2 * 180 / PI is degree
@@ -134,177 +135,7 @@ namespace alphautils
             else
                 return minor_ax;
         }
-
-        void draw_sifts(const string& in_img_path, const string& out_img_path, const string& sift_path, int draw_mode, int colorspace, bool normpoint, bool rootsift, bool binary)
-        {
-            Mat in_img = imread(in_img_path.c_str());
-
-            draw_sifts(in_img, sift_path, draw_mode, colorspace, normpoint, rootsift, binary);
-
-            imwrite(out_img_path.c_str(), in_img);
-        }
-
-        void draw_sifts(const string& in_img_path, const string& out_img_path, const vector<SIFT_Keypoint>& sift_keypoints, int draw_mode, int colorspace, bool normpoint, bool rootsift)
-        {
-            Mat in_img = imread(in_img_path.c_str());
-
-            for (size_t kp_idx = 0; kp_idx < sift_keypoints.size(); kp_idx++)
-                draw_a_sift(in_img, sift_keypoints[kp_idx], draw_mode, normpoint);
-
-            imwrite(out_img_path.c_str(), in_img);
-        }
-
-        void draw_sifts(Mat& in_img, const string& sift_path, int draw_mode, int colorspace, bool normpoint, bool rootsift, bool binary)
-        {
-            SIFThesaff sift_reader(colorspace, normpoint, rootsift);
-            sift_reader.importKeypoints(sift_path, binary);
-            int num_kp = sift_reader.num_kp;
-
-            //float min_degree = 1000;
-            //float max_degree = -1000;
-
-            // Save degree for analyzing
-            //float* degree_pack = new float[num_kp];
-
-            for (int kp_idx = 0; kp_idx < num_kp; kp_idx++)
-            {
-                SIFT_Keypoint curr_kp = {sift_reader.kp[kp_idx][0], sift_reader.kp[kp_idx][1], sift_reader.kp[kp_idx][2], sift_reader.kp[kp_idx][3], sift_reader.kp[kp_idx][4]};
-
-                draw_a_sift(in_img, curr_kp, draw_mode, normpoint);
-                /*
-                float raw_degree = draw_a_sift(in_img, curr_kp, draw_mode, colorspace, normpoint);
-
-                // Save degree
-                degree_pack[kp_idx] = raw_degree;
-
-                if (min_degree > raw_degree)
-                    min_degree = raw_degree;
-                if (max_degree < raw_degree)
-                    max_degree = raw_degree;
-                */
-            }
-
-            /*
-            cout << "Min degree = " << min_degree << " Max degree: " << max_degree << endl;
-
-            // Degree analyzing
-            size_t* degree_hist;
-            float* degree_hist_label;
-            size_t degree_hist_size;
-            HIST_CONF hist_config = {HIST_RANGEMODE_MANUAL, -1, 0, 360, 1};
-            data_to_range_histogram(degree_pack, sift_reader.kp.size(), hist_config, degree_hist, degree_hist_label, degree_hist_size);
-
-            cout << "Degree histogram:" << endl;
-            for (size_t degree_hist_id = 0; degree_hist_id < degree_hist_size; degree_hist_id++)
-                cout << degree_hist_label[degree_hist_id] << " ";
-            cout << endl;
-            for (size_t degree_hist_id = 0; degree_hist_id < degree_hist_size; degree_hist_id++)
-                cout << degree_hist[degree_hist_id] << " ";
-            cout << endl;
-
-            // Release memory
-            delete[] degree_pack;
-            delete[] degree_hist;
-            delete[] degree_hist_label;
-            */
-        }
-
-        float draw_a_sift(Mat& in_img, SIFT_Keypoint in_keypoint, int draw_mode, bool normpoint)
-        {
-            float ret_raw_degree = 0.0f;
-
-            Point2f center(in_keypoint.x, in_keypoint.y);             // x, y
-            if (normpoint)
-            {
-                center.x *= in_img.cols;
-                center.y *= in_img.rows;
-            }
-
-            if (draw_mode == DRAW_POINT)
-            {
-                // void circle(Mat& in_img, Point center, int radius, const Scalar& color, int thickness=1, int lineType=8, int shift=0)
-                circle(in_img, center, 0, Scalar(0, 255, 0), 2, CV_AA);
-            }
-            else // Affine by ellipse
-            {
-                /*float raw_degree = ellipse_abc2degree(in_keypoint.a, in_keypoint.b, in_keypoint.c);
-                float major_ax = 1/sqrt(in_keypoint.a);
-                float minor_ax = 1/sqrt(in_keypoint.c);*/
-                float raw_degree, major_ax, minor_ax;
-                vgg_abc2ellipse(in_keypoint.a, in_keypoint.b, in_keypoint.c, raw_degree, major_ax, minor_ax);
-                ret_raw_degree = raw_degree;
-                // Degree and axis correction
-//                    if (minor_ax > major_ax)
-//                    {
-//                        // Degree correction
-//                        /*if (in_keypoint.b < 0)
-//                            raw_degree += 90;
-//                        else
-//                            raw_degree -= 90;*/
-//
-//                        // Axis correction
-//                        float tmp = major_ax;
-//                        major_ax = minor_ax;
-//                        minor_ax = tmp;
-//                    }
-
-                Size axes(major_ax, minor_ax);            // major axis, minor axis
-                // void ellipse(Mat& in_img, Point center, Size axes, double angle, double startAngle, double endAngle, const Scalar& color, int thickness=1, int lineType=8, int shift=0)
-                int rand_b = rand() % 175 + 80;
-                int rand_g = rand() % 175 + 80;
-                int rand_r = rand() % 175 + 80;
-
-                // Color coded degree
-
-                if (raw_degree <= 90)       // Blue
-                {
-                    rand_b = 255;
-                    rand_g = 0;
-                    rand_r = 0;
-                }
-                else if (raw_degree <= 180) // Green
-                {
-                    rand_b = 0;
-                    rand_g = 255;
-                    rand_r = 0;
-                }
-                else if (raw_degree <= 270) // Red
-                {
-                    rand_b = 0;
-                    rand_g = 0;
-                    rand_r = 255;
-                }
-                else if (raw_degree <= 360) // White
-                {
-                    rand_b = 255;
-                    rand_g = 255;
-                    rand_r = 255;
-                }
-
-                if (draw_mode == DRAW_AFFINE)
-                {
-                    if (0)  // Draw transparent
-                    {
-                        Mat transparent_buffer = Mat(in_img.rows, in_img.cols, CV_8UC3, Scalar(0, 0, 0));
-                        ellipse(transparent_buffer, center, axes, raw_degree, 0, 360, Scalar(0, 0, 0), 2, CV_AA);                           // Ellipse shadow
-                        ellipse(transparent_buffer, center, axes, raw_degree, 0, 360, Scalar(rand_b, rand_g, rand_r) * 0.5, 1, CV_AA);      // Ellipse line
-                        ellipse(transparent_buffer, center, axes, raw_degree, -1, 1, Scalar(0, 0, 255) * 0.5, 3, CV_AA);                    // Ellipse point (direction)
-                        in_img += transparent_buffer;
-                    }
-                    else    // Draw over
-                    {
-                        ellipse(in_img, center, axes, raw_degree, 0, 360, Scalar(0, 0, 0), 6, CV_AA);                       // Ellipse shadow
-                        ellipse(in_img, center, axes, raw_degree, 0, 360, Scalar(rand_b, rand_g, rand_r), 2, CV_AA);        // Ellipse line
-                        ellipse(in_img, center, axes, raw_degree, -1, 1, Scalar(0, 0, 255), 3, CV_AA);                      // Ellipse point (direction)
-                    }
-                }
-                else // Affine mask
-                    ellipse(in_img, center, axes, raw_degree, 0, 360, Scalar(255, 255, 255), -1, CV_AA);                    // Ellipse mask (filled ellipse)
-            }
-
-            return ret_raw_degree;
-        }
-
+		
         // http://stackoverflow.com/questions/13133055/opencv-displaying-2-images-adjacently-in-the-same-window
         void concatimage(const Mat& img1, const Mat& img2, Mat& img_out)
         {
